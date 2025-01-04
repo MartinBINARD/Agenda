@@ -1,16 +1,24 @@
 import { Feather } from "@expo/vector-icons";
-import { Modal, StyleSheet, Text, View } from "react-native";
+import {
+  Keyboard,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { colors } from "../../constants/colors";
+import Input from "./Input";
 
-const Form = ({ isFormVisible, closeForm }) => {
-
+export default function Form({ isFormVisible, closeForm }) {
+  const closeKeyboardHandler = () => Keyboard.dismiss();
   return (
     <Modal
       visible={isFormVisible}
       presentationStyle="formSheet"
       animationType="slide"
     >
-      <View style={styles.formContainer}>
+      <Pressable style={styles.formContainer} onPress={closeKeyboardHandler}>
         <View style={styles.headerContainer}>
           <Text style={styles.formTitle}>Nouvel événement</Text>
           <Feather
@@ -21,12 +29,14 @@ const Form = ({ isFormVisible, closeForm }) => {
             suppressHighlighting={true}
           />
         </View>
-      </View>
+        <Input label="Titre" autoCorrect={false} maxLength={40} />
+        <Input label="Lieu" autoCorrect={false} maxLength={40} />
+        <Input label="Téléphone" inputMode="tel" maxLength={10} />
+        <Input label="Description" maxLength={120} />
+      </Pressable>
     </Modal>
   );
-};
-
-export default Form;
+}
 
 const styles = StyleSheet.create({
   formContainer: {
