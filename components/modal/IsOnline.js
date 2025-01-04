@@ -2,7 +2,7 @@ import { Platform, StyleSheet, Switch, Text, View } from "react-native";
 import { colors } from "../../constants/colors";
 
 const IsOnline = ({ isEnabled, setIsEnabled }) => {
-  const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
+  const toggleSwitch = () => setIsEnabled(!isEnabled);
 
   return (
     <View style={styles.container}>

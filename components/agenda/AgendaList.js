@@ -24,19 +24,35 @@ export default function AgendaList() {
 
   const agendaItems = useSelector((state) => state.agenda.events);
   const [isFormVisible, setIsFormVisible] = useState(false);
-  const closeFormHandler = () => setIsFormVisible(false);
+  const [selectedEvent, setSelectedEvent] = useState();
+  const closeFormHandler = () => {
+    setIsFormVisible(false);
+    setSelectedEvent();
+  };
   const openFormHandler = () => setIsFormVisible(true);
+
+  const selectEventHandler = (id) => {
+    setSelectedEvent(id);
+    setIsFormVisible(true);
+  };
 
   return (
     <>
       <FlatList
         data={agendaItems}
-        renderItem={({ item }) => <ListItem item={item} />}
-        style={styles.listContainer}
+        keyExtractor={({ id }) => id}
         ItemSeparatorComponent={<View style={{ height: 24 }} />}
+        style={styles.listContainer}
+        renderItem={({ item }) => (
+          <ListItem item={item} selectItem={selectEventHandler} />
+        )}
         ListHeaderComponent={<Header openForm={openFormHandler} />}
       />
-      <Form isFormVisible={isFormVisible} closeForm={closeFormHandler} />
+      <Form
+        isFormVisible={isFormVisible}
+        closeForm={closeFormHandler}
+        selectedEvent={selectedEvent}
+      />
     </>
   );
 };

@@ -1,5 +1,5 @@
 import { Feather } from "@expo/vector-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Keyboard,
   Modal,
@@ -8,34 +8,54 @@ import {
   Text,
   View,
 } from "react-native";
+import { useSelector } from "react-redux";
 import { colors } from "../../constants/colors";
 import CustomBtn from "./CustomBtn";
 import DateTimePicker from "./DateTimePicker";
 import Input from "./Input";
 import IsOnline from "./IsOnline";
 
-export default function Form({ isFormVisible, closeForm }) {
+const initialState = {
+  title: "",
+  location: "",
+  phoneNumber: "",
+  description: "",
+  startDate: new Date(),
+  endDate: new Date(),
+  isOnline: false,
+};
+
+export default function Form({ isFormVisible, closeForm, selectedEvent }) {
+  const event = useSelector((state) =>
+    state.agenda.events.find((event) => event.id === selectedEvent)
+  );
   const closeKeyboardHandler = () => Keyboard.dismiss();
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
-  const [isOnline, setIsOnline] = useState(false);
-  const [title, setTitle] = useState();
-  const [location, setLocation] = useState();
-  const [phoneNumber, setPhoneNumber] = useState();
-  const [description, setDescription] = useState();
+  const [formData, setFormData] = useState(initialState);
+
+  const onFormChange = (key, value) => {
+    setFormData((previous) => {
+      return {
+        ...previous,
+        [key]: value,
+      };
+    });
+  };
 
   const onSubmit = () => {
-    console.log({
-      title,
-      location,
-      phoneNumber,
-      description,
-      startDate,
-      endDate,
-      isOnline,
-    });
     closeForm();
+    setFormData(initialState);
   };
+  
+  const closeFormHandler = () => {
+    closeForm();
+    setFormData(initialState);
+  };
+
+  useEffect(() => {
+    if (event) {
+      setFormData(event);
+    }
+  }, [event]);
 
   return (
     <Modal
@@ -50,7 +70,7 @@ export default function Form({ isFormVisible, closeForm }) {
             name="trash-2"
             size={28}
             color={colors.LIGHT}
-            onPress={closeForm}
+            onPress={closeFormHandler}
             suppressHighlighting={true}
           />
         </View>
@@ -58,43 +78,47 @@ export default function Form({ isFormVisible, closeForm }) {
           label="Titre"
           autoCorrect={false}
           maxLength={40}
-          value={title}
-          onChangeText={setTitle}
+          value={formData.title}
+          onChangeText={onFormChange.bind(this, "title")}
         />
         <Input
-          label={isOnline ? "Url" : "Lieu"}
-          inputMode={isOnline ? "url" : "text"}
+          label={formData.isOnline ? "Url" : "Lieu"}
+          inputMode={formData.isOnline ? "url" : "text"}
           autoCorrect={false}
-          value={location}
-          onChangeText={setLocation}
+          maxLength={40}
+          value={formData.location}
+          onChangeText={onFormChange.bind(this, "location")}
         />
         <Input
           label="Téléphone"
           inputMode="tel"
           maxLength={10}
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
+          value={formData.phoneNumber}
+          onChangeText={onFormChange.bind(this, "phoneNumber")}
         />
         <Input
           label="Description"
           multiline
           maxLength={120}
-          value={description}
-          onChangeText={setDescription}
+          value={formData.description}
+          onChangeText={onFormChange.bind(this, "description")}
         />
         <DateTimePicker
           label="Début"
-          dateTime={startDate}
-          setDateTime={setStartDate}
+          dateTime={formData.startDate}
+          setDateTime={onFormChange.bind(this, "startDate")}
         />
         <DateTimePicker
           label="Fin"
-          dateTime={endDate}
-          setDateTime={setEndDate}
+          dateTime={formData.endDate}
+          setDateTime={onFormChange.bind(this, "endDate")}
         />
-        <IsOnline isEnabled={isOnline} setIsEnabled={setIsOnline} />
+        <IsOnline
+          isEnabled={formData.isOnline}
+          setIsEnabled={onFormChange.bind(this, "isOnline")}
+        />
         <View style={styles.btnContainer}>
-          <CustomBtn text="Annuler" color={colors.PINK} onPress={closeForm} />
+          <CustomBtn text="Annuler" color={colors.PINK} onPress={closeFormHandler} />
           <CustomBtn text="Valider" color={colors.VIOLET} onPress={onSubmit} />
         </View>
       </Pressable>
