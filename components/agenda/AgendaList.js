@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import { useSelector } from "react-redux";
 import { colors } from "../../constants/colors";
+import ListItem from "./ListItem";
 
 const Header = () => (
   <View style={styles.headerContainer}>
