@@ -1,31 +1,45 @@
-import { Ionicons } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
+import { useState } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import { useSelector } from "react-redux";
 import { colors } from "../../constants/colors";
+import Form from "../modal/Form";
 import ListItem from "./ListItem";
 
-const Header = () => (
+const Header = ({ openForm }) => (
   <View style={styles.headerContainer}>
-    <Text></Text>
+    <View />
     <Text style={styles.title}>AGENDA</Text>
-    <Ionicons name="add-circle" size={32} color={colors.PINK} />
+    <AntDesign
+      name="pluscircle"
+      size={32}
+      color={colors.PINK}
+      suppressHighlighting={true}
+      onPress={openForm}
+    />
   </View>
 );
 
 export default function AgendaList() {
+
   const agendaItems = useSelector((state) => state.agenda.events);
+  const [isFormVisible, setIsFormVisible] = useState(false);
+  const closeFormHandler = () => setIsFormVisible(false);
+  const openFormHandler = () => setIsFormVisible(true);
 
   return (
-    <FlatList
-      data={agendaItems}
-      keyExtractor={({ id }) => id}
-      ItemSeparatorComponent={<View style={{ height: 24 }} />}
-      style={styles.listContainer}
-      renderItem={({ item }) => <ListItem item={item} />}
-      ListHeaderComponent={<Header />}
-    />
+    <>
+      <FlatList
+        data={agendaItems}
+        renderItem={({ item }) => <ListItem item={item} />}
+        style={styles.listContainer}
+        ItemSeparatorComponent={<View style={{ height: 24 }} />}
+        ListHeaderComponent={<Header openForm={openFormHandler} />}
+      />
+      <Form isFormVisible={isFormVisible} closeForm={closeFormHandler} />
+    </>
   );
-}
+};
 
 const styles = StyleSheet.create({
   listContainer: {
