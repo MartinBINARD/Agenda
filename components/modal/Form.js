@@ -1,4 +1,5 @@
 import { Feather } from "@expo/vector-icons";
+import { useState } from "react";
 import {
   Keyboard,
   Modal,
@@ -8,10 +9,14 @@ import {
   View,
 } from "react-native";
 import { colors } from "../../constants/colors";
+import DateTimePicker from "./DateTimePicker";
 import Input from "./Input";
 
 export default function Form({ isFormVisible, closeForm }) {
   const closeKeyboardHandler = () => Keyboard.dismiss();
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
+
   return (
     <Modal
       visible={isFormVisible}
@@ -33,6 +38,16 @@ export default function Form({ isFormVisible, closeForm }) {
         <Input label="Lieu" autoCorrect={false} maxLength={40} />
         <Input label="Téléphone" inputMode="tel" maxLength={10} />
         <Input label="Description" maxLength={120} />
+        <DateTimePicker
+          label="Début"
+          dateTime={startDate}
+          setDateTime={setStartDate}
+        />
+        <DateTimePicker
+          label="Fin"
+          dateTime={endDate}
+          setDateTime={setEndDate}
+        />
       </Pressable>
     </Modal>
   );
