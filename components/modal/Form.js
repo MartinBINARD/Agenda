@@ -9,13 +9,33 @@ import {
   View,
 } from "react-native";
 import { colors } from "../../constants/colors";
+import CustomBtn from "./CustomBtn";
 import DateTimePicker from "./DateTimePicker";
 import Input from "./Input";
+import IsOnline from "./IsOnline";
 
 export default function Form({ isFormVisible, closeForm }) {
   const closeKeyboardHandler = () => Keyboard.dismiss();
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
+  const [isOnline, setIsOnline] = useState(false);
+  const [title, setTitle] = useState();
+  const [location, setLocation] = useState();
+  const [phoneNumber, setPhoneNumber] = useState();
+  const [description, setDescription] = useState();
+
+  const onSubmit = () => {
+    console.log({
+      title,
+      location,
+      phoneNumber,
+      description,
+      startDate,
+      endDate,
+      isOnline,
+    });
+    closeForm();
+  };
 
   return (
     <Modal
@@ -34,10 +54,34 @@ export default function Form({ isFormVisible, closeForm }) {
             suppressHighlighting={true}
           />
         </View>
-        <Input label="Titre" autoCorrect={false} maxLength={40} />
-        <Input label="Lieu" autoCorrect={false} maxLength={40} />
-        <Input label="Téléphone" inputMode="tel" maxLength={10} />
-        <Input label="Description" maxLength={120} />
+        <Input
+          label="Titre"
+          autoCorrect={false}
+          maxLength={40}
+          value={title}
+          onChangeText={setTitle}
+        />
+        <Input
+          label={isOnline ? "Url" : "Lieu"}
+          inputMode={isOnline ? "url" : "text"}
+          autoCorrect={false}
+          value={location}
+          onChangeText={setLocation}
+        />
+        <Input
+          label="Téléphone"
+          inputMode="tel"
+          maxLength={10}
+          value={phoneNumber}
+          onChangeText={setPhoneNumber}
+        />
+        <Input
+          label="Description"
+          multiline
+          maxLength={120}
+          value={description}
+          onChangeText={setDescription}
+        />
         <DateTimePicker
           label="Début"
           dateTime={startDate}
@@ -48,6 +92,11 @@ export default function Form({ isFormVisible, closeForm }) {
           dateTime={endDate}
           setDateTime={setEndDate}
         />
+        <IsOnline isEnabled={isOnline} setIsEnabled={setIsOnline} />
+        <View style={styles.btnContainer}>
+          <CustomBtn text="Annuler" color={colors.PINK} onPress={closeForm} />
+          <CustomBtn text="Valider" color={colors.VIOLET} onPress={onSubmit} />
+        </View>
       </Pressable>
     </Modal>
   );
@@ -69,5 +118,9 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     color: colors.VIOLET,
+  },
+  btnContainer: {
+    flexDirection: "row",
+    justifyContent: "space-evenly",
   },
 });
