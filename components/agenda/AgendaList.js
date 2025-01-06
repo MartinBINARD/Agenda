@@ -39,7 +39,7 @@ export default function AgendaList() {
   return (
     <>
       <FlatList
-        data={agendaItems}
+        data={[...agendaItems].sort((a,b) => new Date(a.startDate) - new Date(b.startDate))}
         keyExtractor={({ id }) => id}
         ItemSeparatorComponent={<View style={{ height: 24 }} />}
         style={styles.listContainer}
