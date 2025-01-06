@@ -3,7 +3,7 @@ import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { getFormattedDate, getFormattedTime } from "../../utils";
 
-const DateTimePicker = ({ label, dateTime, setDateTime }) => {
+const DateTimePicker = ({ label, dateTime, setDateTime, error }) => {
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [mode, setMode] = useState("date");
 
@@ -26,18 +26,23 @@ const DateTimePicker = ({ label, dateTime, setDateTime }) => {
     hideDatePicker();
   };
 
+  const dateTimeStyles = [styles.dateTime];
+  if (error) {
+    dateTimeStyles.push(styles.error);
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
       <View style={styles.dateAndTimeContainer}>
         <Pressable
-          style={[styles.dateContainer, styles.dateTime]}
+          style={[styles.dateContainer, dateTimeStyles]}
           onPress={showDate}
         >
           <Text>{getFormattedDate(dateTime)}</Text>
         </Pressable>
         <Pressable
-          style={[styles.timeContainer, styles.dateTime]}
+          style={[styles.timeContainer, dateTimeStyles]}
           onPress={showTime}
         >
           <Text>{getFormattedTime(dateTime)}</Text>
@@ -94,4 +99,8 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 18,
   },
+  error: {
+    borderColor: "red",
+    borderWidth: 3
+  }
 });

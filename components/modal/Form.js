@@ -12,6 +12,7 @@ import { useSelector } from "react-redux";
 import { colors } from "../../constants/colors";
 import CustomBtn from "./CustomBtn";
 import DateTimePicker from "./DateTimePicker";
+import ErrorModal from "./ErrorModal";
 import Input from "./Input";
 import IsOnline from "./IsOnline";
 
@@ -25,35 +26,127 @@ const initialState = {
   isOnline: false,
 };
 
+const initialStateWithErrors = {
+  title: {
+    value: "",
+    error: false
+  },
+  location: {
+    value: "",
+    error: false
+  },
+  phoneNumber: {
+    value: "",
+    error: false
+  },
+  description: {
+    value: "",
+  },
+  startDate: {
+    value: new Date(),
+  },
+  endDate: {
+    value: new Date(),
+    error: false
+  },
+  isOnline: {
+    value: false
+  }
+};
+
 export default function Form({ isFormVisible, closeForm, selectedEvent }) {
   const event = useSelector((state) =>
     state.agenda.events.find((event) => event.id === selectedEvent)
   );
   const closeKeyboardHandler = () => Keyboard.dismiss();
-  const [formData, setFormData] = useState(initialState);
+  const [formData, setFormData] = useState(initialStateWithErrors);
+  const [errorMessages, setErrorMessages] = useState([]);
+  const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+
+  const closeErrorModal = () => {
+    setIsErrorModalVisible(false);
+  };
 
   const onFormChange = (key, value) => {
     setFormData((previous) => {
       return {
         ...previous,
-        [key]: value,
+        [key]: {
+          value,
+          error: false
+        },
       };
     });
   };
 
+  const formErrorHandler = (key) => {
+    setFormData((previous) => {
+      return {
+        ...previous,
+        [key]: {
+          ...previous[key],
+          error: true
+        },
+      };
+    });
+  };
+
+  const isUrlValid = (string) => {
+    try {
+      new URL(string)
+      return true
+    } catch (error) {
+      return false
+    }
+  }
+
   const onSubmit = () => {
     closeForm();
-    setFormData(initialState);
+    setFormData(initialStateWithErrors);
   };
   
   const closeFormHandler = () => {
     closeForm();
-    setFormData(initialState);
+    setFormData(initialStateWithErrors);
+  };
+
+  const validateBeforeSubmit = () => {
+    const messsages = [];
+    if (!formData.title.value?.trim().length) {
+      formErrorHandler("title");
+      messsages.push("Le titre est obligatoire");
+    }
+    if (formData.isOnline.value && !isUrlValid(formData.location?.value)) {
+      formErrorHandler("location");
+      messsages.push("L'url est invalide");
+    }
+    if (formData.phoneNumber.value?.length && formData.phoneNumber.value.length !== 10 && isNaN(+formData.phoneNumber.value)) {
+      messsages.push("Le numéro de téléphone est invalide");
+      formErrorHandler("phoneNumber");
+    }
+    if (formData.endDate.value < formData.startDate.value) {
+      formErrorHandler("endDate");
+      messsages.push("La fin de l'événement doit être après le début");
+    }
+    if (messsages.length) {
+      setIsErrorModalVisible(true);
+      setErrorMessages(messsages);
+    } else {
+      onSubmit();
+    }
   };
 
   useEffect(() => {
+    let initialState = {};
+
     if (event) {
-      setFormData(event);
+      Object.keys(event).map(key => {
+        initialState[key] = {
+          value: event[key],
+          error: false
+        }
+      });
+      setFormData(initialState);
     }
   }, [event]);
 
@@ -78,50 +171,59 @@ export default function Form({ isFormVisible, closeForm, selectedEvent }) {
           label="Titre"
           autoCorrect={false}
           maxLength={40}
-          value={formData.title}
+          value={formData.title.value}
           onChangeText={onFormChange.bind(this, "title")}
+          error={formData.title.error}
         />
         <Input
-          label={formData.isOnline ? "Url" : "Lieu"}
-          inputMode={formData.isOnline ? "url" : "text"}
+          label={formData.isOnline.value ? "Url" : "Lieu"}
+          inputMode={formData.isOnline.value ? "url" : "text"}
           autoCorrect={false}
           maxLength={40}
-          value={formData.location}
+          value={formData.location.value}
           onChangeText={onFormChange.bind(this, "location")}
+          error={formData.location.error}
         />
         <Input
           label="Téléphone"
           inputMode="tel"
           maxLength={10}
-          value={formData.phoneNumber}
+          value={formData.phoneNumber.value}
           onChangeText={onFormChange.bind(this, "phoneNumber")}
+          error={formData.phoneNumber.error}
         />
         <Input
           label="Description"
           multiline
           maxLength={120}
-          value={formData.description}
+          value={formData.description.value}
           onChangeText={onFormChange.bind(this, "description")}
         />
         <DateTimePicker
           label="Début"
-          dateTime={formData.startDate}
+          dateTime={formData.startDate.value}
           setDateTime={onFormChange.bind(this, "startDate")}
         />
         <DateTimePicker
           label="Fin"
-          dateTime={formData.endDate}
+          dateTime={formData.endDate.value}
           setDateTime={onFormChange.bind(this, "endDate")}
+          error={formData.endDate.error}
         />
         <IsOnline
-          isEnabled={formData.isOnline}
+          isEnabled={formData.isOnline.value}
           setIsEnabled={onFormChange.bind(this, "isOnline")}
         />
         <View style={styles.btnContainer}>
           <CustomBtn text="Annuler" color={colors.PINK} onPress={closeFormHandler} />
-          <CustomBtn text="Valider" color={colors.VIOLET} onPress={onSubmit} />
+          <CustomBtn text="Valider" color={colors.VIOLET} onPress={validateBeforeSubmit} />
         </View>
       </Pressable>
+      <ErrorModal
+        isModalVisible={isErrorModalVisible}
+        closeModal={closeErrorModal}
+        errors={errorMessages}
+      />
     </Modal>
   );
 }
