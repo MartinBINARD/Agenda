@@ -11,6 +11,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import * as Yup from "yup";
 import { colors } from "../../constants/colors";
+import { createEvent } from "../../lib";
 import { addEvent, removeEvent, updateEvent } from "../../store/slices/agendaSlice";
 import CustomBtn from "./CustomBtn";
 import DateTimePicker from "./DateTimePicker";
@@ -22,6 +23,7 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
   const event = useSelector((state) =>
     state.agenda.events.find((event) => event.id === selectedEvent)
   );
+  const dispatch = useDispatch();
   const initialState = event ? event : {
     title: "",
     location: "",
@@ -50,9 +52,8 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
     ),
   });
   const closeKeyboardHandler = () => Keyboard.dismiss();
-  const dispatch = useDispatch();
 
-  const onSubmit = (values) => {
+  const onSubmit = async (values) => {
     const data = {
       title: values.title,
       location: values.location,
@@ -67,7 +68,8 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
       data.id = event.id;
       dispatch(updateEvent(data));
     } else {
-      data.id = Date.now().toString();
+      const newEventId = await createEvent(data);
+      data.id = newEventId;
       dispatch(addEvent(data));
     }
 
@@ -153,7 +155,7 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
                 multiline
                 maxLength={120}
                 value={values.description}
-                onChangeText={handleChange("Description")}
+                onChangeText={handleChange("description")}
                 />
               <DateTimePicker
                 label="Début"

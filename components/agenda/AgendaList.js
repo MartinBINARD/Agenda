@@ -1,11 +1,12 @@
 import { AntDesign } from "@expo/vector-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { colors } from "../../constants/colors";
-import Form from "../modal/Form";
-import ListItem from "./ListItem";
+import { getAllEvents } from "../../lib";
+import { setEvents } from "../../store/slices/agendaSlice";
 import FormWithFormik from "../modal/FormWithFormik";
+import ListItem from "./ListItem";
 
 const Header = ({ openForm }) => (
   <View style={styles.headerContainer}>
@@ -24,6 +25,7 @@ const Header = ({ openForm }) => (
 export default function AgendaList() {
 
   const agendaItems = useSelector((state) => state.agenda.events);
+  const dispatch = useDispatch();
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState();
   const closeFormHandler = () => {
@@ -36,6 +38,15 @@ export default function AgendaList() {
     setSelectedEvent(id);
     setIsFormVisible(true);
   };
+
+  const getEvents = async () => {
+    const events = await getAllEvents();
+    dispatch(setEvents(events));
+  };
+
+  useEffect(() => {
+    getEvents();
+  }, []);
 
   return (
     <>
