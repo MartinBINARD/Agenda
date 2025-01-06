@@ -29,7 +29,19 @@ const initialState = {
 export const agendaSlice = createSlice({
   name: "agenda",
   initialState,
-  reducers: {},
+  reducers: {
+    addEvent: (state, action) => {
+      state.events = [...state.events, action.payload]
+    },
+    updateEvent: (state, action) => {
+      const index = state.events.indexOf(state.events.find(evt => evt.id === action.payload.id));
+      state.events[index] = action.payload;
+    },
+    removeEvent: (state, action) => {
+      state.events = state.events.filter(evt => evt.id !== action.payload.id);
+    }
+  },
 });
 
+export const { addEvent, updateEvent, removeEvent } = agendaSlice.actions;
 export default agendaSlice.reducer;

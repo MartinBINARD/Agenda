@@ -8,8 +8,9 @@ import {
   Text,
   View,
 } from "react-native";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { colors } from "../../constants/colors";
+import { addEvent, removeEvent, updateEvent } from "../../store/slices/agendaSlice";
 import CustomBtn from "./CustomBtn";
 import DateTimePicker from "./DateTimePicker";
 import ErrorModal from "./ErrorModal";
@@ -62,6 +63,7 @@ export default function Form({ isFormVisible, closeForm, selectedEvent }) {
   const [formData, setFormData] = useState(initialStateWithErrors);
   const [errorMessages, setErrorMessages] = useState([]);
   const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+  const dispatch = useDispatch();
 
   const closeErrorModal = () => {
     setIsErrorModalVisible(false);
@@ -101,8 +103,33 @@ export default function Form({ isFormVisible, closeForm, selectedEvent }) {
   }
 
   const onSubmit = () => {
+    const data = {
+      title: formData.title.value,
+      location: formData.location.value,
+      phoneNumber: formData.phoneNumber.value,
+      description: formData.description.value,
+      startDate: new Date(formData.startDate.value).toUTCString(),
+      endDate: new Date(formData.startDate.value).toUTCString(),
+      isOnline: formData.isOnline.value,
+    };
+
+    if (event?.id) {
+      data.id = event.id;
+      dispatch(updateEvent(data));
+    } else {
+      data.id = Date.now().toString();
+      dispatch(addEvent(data));
+    }
+
     closeForm();
     setFormData(initialStateWithErrors);
+  };
+
+  const removeEvt = () => {
+    if (event) {
+      dispatch(removeEvent({id : event.id}));
+    }
+    closeFormHandler();
   };
   
   const closeFormHandler = () => {
@@ -163,7 +190,7 @@ export default function Form({ isFormVisible, closeForm, selectedEvent }) {
             name="trash-2"
             size={28}
             color={colors.LIGHT}
-            onPress={closeFormHandler}
+            onPress={removeEvt}
             suppressHighlighting={true}
           />
         </View>
