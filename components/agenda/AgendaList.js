@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { colors } from "../../constants/colors";
 import Form from "../modal/Form";
 import ListItem from "./ListItem";
+import FormWithFormik from "../modal/FormWithFormik";
 
 const Header = ({ openForm }) => (
   <View style={styles.headerContainer}>
@@ -48,7 +49,7 @@ export default function AgendaList() {
         )}
         ListHeaderComponent={<Header openForm={openFormHandler} />}
       />
-      <Form
+      <FormWithFormik
         isFormVisible={isFormVisible}
         closeForm={closeFormHandler}
         selectedEvent={selectedEvent}

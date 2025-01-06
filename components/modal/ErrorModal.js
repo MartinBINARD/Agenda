@@ -6,8 +6,8 @@ export default function ErrorModal({ isModalVisible, closeModal, errors}) {
   return (
     <Modal visible={isModalVisible} animation="slide" transparent>
       <View style={styles.container}>
-        {errors.map((error, i) => (
-          <Text key={i} style={styles.text}> &#8226;  {error}</Text>
+        {Object.keys(errors).map((key, i) => (
+          <Text key={i} style={styles.text}> &#8226;  {errors[key]}</Text>
         ))}
       </View>
       <View style={styles.btnContainer}>
