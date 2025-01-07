@@ -12,8 +12,8 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import * as Yup from "yup";
 import { colors } from "../../constants/colors";
-import { createEvent } from "../../lib";
-import { addEvent, removeEvent, updateEvent } from "../../store/slices/agendaSlice";
+import { createEvent, updateEvent } from "../../lib";
+import { addEvent, removeEvent, updateEvent as updateReducer } from "../../store/slices/agendaSlice";
 import ErrorOverlay from "../overlay/ErrorOverlay";
 import LoadingOverlay from "../overlay/LoadingOverlay";
 import CustomBtn from "./CustomBtn";
@@ -58,12 +58,14 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
   });
   const closeKeyboardHandler = () => Keyboard.dismiss();
 
-  const createEventHandler = async (data) => {
+  const httpEventHandler = async (data, httpFn, reducer) => {
     setIsLoading(true);
     try {
-      const newEventId = await createEvent(data);
-      data.id = newEventId;
-      dispatch(addEvent(data));
+      const newEventId = await httpFn(data);
+      if (!data.id) {
+        data.id = newEventId;
+      }
+      dispatch(reducer(data));
       setIsLoading(false);
       closeForm();
     } catch (error) {
@@ -89,9 +91,9 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
 
     if (event?.id) {
       data.id = event.id;
-      dispatch(updateEvent(data));
+      httpEventHandler(data, updateEvent, updateReducer);
     } else {
-      createEventHandler(data);
+      httpEventHandler(data, createEvent, addEvent);
     }
   };
 
