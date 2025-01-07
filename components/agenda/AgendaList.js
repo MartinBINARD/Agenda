@@ -1,6 +1,6 @@
 import { AntDesign } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { colors } from "../../constants/colors";
 import { getAllEvents } from "../../lib";
@@ -28,6 +28,7 @@ export default function AgendaList() {
   const dispatch = useDispatch();
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState();
+  const [isLoading, setIsLoading] = useState(false);
   const closeFormHandler = () => {
     setIsFormVisible(false);
     setSelectedEvent();
@@ -45,11 +46,20 @@ export default function AgendaList() {
   };
 
   useEffect(() => {
-    getEvents();
+    setIsLoading(true);
+    setTimeout(() => {
+      getEvents();
+      setIsLoading(false);
+    }, 2000);
   }, []);
 
   return (
     <>
+    { isLoading ? (
+      <View style={{flex: 1, alignItems: "center", justifyContent: "center"}}>
+        <ActivityIndicator color={colors.WHITE} size="large" />
+      </View>
+    ) : 
       <FlatList
         data={[...agendaItems].sort((a,b) => new Date(a.startDate) - new Date(b.startDate))}
         keyExtractor={({ id }) => id}
@@ -60,6 +70,7 @@ export default function AgendaList() {
         )}
         ListHeaderComponent={<Header openForm={openFormHandler} />}
       />
+    }
       <FormWithFormik
         isFormVisible={isFormVisible}
         closeForm={closeFormHandler}

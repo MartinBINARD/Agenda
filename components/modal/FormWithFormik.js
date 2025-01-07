@@ -1,5 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import { Formik } from "formik";
+import { useState } from "react";
 import {
   Keyboard,
   Modal,
@@ -13,6 +14,7 @@ import * as Yup from "yup";
 import { colors } from "../../constants/colors";
 import { createEvent } from "../../lib";
 import { addEvent, removeEvent, updateEvent } from "../../store/slices/agendaSlice";
+import LoadingOverlay from "../overlay/LoadingOverlay";
 import CustomBtn from "./CustomBtn";
 import DateTimePicker from "./DateTimePicker";
 import ErrorModal from "./ErrorModal";
@@ -23,6 +25,7 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
   const event = useSelector((state) =>
     state.agenda.events.find((event) => event.id === selectedEvent)
   );
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const initialState = event ? event : {
     title: "",
@@ -68,12 +71,15 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
       data.id = event.id;
       dispatch(updateEvent(data));
     } else {
+      setIsLoading(true);
       const newEventId = await createEvent(data);
       data.id = newEventId;
       dispatch(addEvent(data));
     }
-
-    closeForm();
+    setTimeout(() => {
+      closeForm();
+      setIsLoading(false);
+    }, 2000);
   };
 
   const removeEvt = () => {
@@ -174,13 +180,19 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
                 />
               <View style={styles.btnContainer}>
                 <CustomBtn text="Annuler" color={colors.PINK} onPress={closeFormHandler} />
-                <CustomBtn text="Valider" color={colors.VIOLET} onPress={handleSubmit} />
+                <CustomBtn
+                  text="Valider"
+                  color={colors.VIOLET}
+                  onPress={handleSubmit}
+                  isLoading={isLoading}
+                />
               </View>
               <ErrorModal
                 isModalVisible={status == "error"}
                 closeModal={setStatus}
                 errors={errors}
               />
+              { isLoading ? <LoadingOverlay /> : null}
             </>
           )}}
         </Formik>
