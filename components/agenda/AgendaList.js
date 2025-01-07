@@ -1,6 +1,6 @@
 import { AntDesign } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Dimensions, FlatList, StyleSheet, Text, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { colors } from "../../constants/colors";
 import { getAllEvents } from "../../lib";
@@ -22,6 +22,13 @@ const Header = ({ openForm }) => (
   </View>
 );
 
+const ListEmptyComponent = ({ isLoading, error }) => (
+  <View style={styles.listEmptyContainer}>
+    {isLoading ? <ActivityIndicator color={colors.WHITE} size="large" /> : null}
+    {error ? <Text style={styles.errorText}>Une erreur s'est produite. Veuillez ré-essayer utlérieurement</Text> : null}
+  </View>
+)
+
 export default function AgendaList() {
 
   const agendaItems = useSelector((state) => state.agenda.events);
@@ -29,6 +36,7 @@ export default function AgendaList() {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState();
   const [isLoading, setIsLoading] = useState(false);
+  const [httpError, setHttpError] = useState(false);
   const closeFormHandler = () => {
     setIsFormVisible(false);
     setSelectedEvent();
@@ -41,8 +49,12 @@ export default function AgendaList() {
   };
 
   const getEvents = async () => {
-    const events = await getAllEvents();
-    dispatch(setEvents(events));
+    try {
+      const events = await getAllEvents();
+      dispatch(setEvents(events));
+    } catch (error) {
+      setHttpError(true);
+    }
   };
 
   useEffect(() => {
@@ -55,11 +67,6 @@ export default function AgendaList() {
 
   return (
     <>
-    { isLoading ? (
-      <View style={{flex: 1, alignItems: "center", justifyContent: "center"}}>
-        <ActivityIndicator color={colors.WHITE} size="large" />
-      </View>
-    ) : 
       <FlatList
         data={[...agendaItems].sort((a,b) => new Date(a.startDate) - new Date(b.startDate))}
         keyExtractor={({ id }) => id}
@@ -69,8 +76,10 @@ export default function AgendaList() {
           <ListItem item={item} selectItem={selectEventHandler} />
         )}
         ListHeaderComponent={<Header openForm={openFormHandler} />}
+        ListEmptyComponent={
+          <ListEmptyComponent isLoading={isLoading} error={httpError} />
+        }
       />
-    }
       <FormWithFormik
         isFormVisible={isFormVisible}
         closeForm={closeFormHandler}
@@ -81,6 +90,18 @@ export default function AgendaList() {
 };
 
 const styles = StyleSheet.create({
+  listEmptyContainer: {
+    height: Dimensions.get("screen").height / 1.5,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 16
+  },
+  errorText: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: colors.WHITE,
+    textAlign: "center"
+  },
   listContainer: {
     paddingHorizontal: 16,
   },
