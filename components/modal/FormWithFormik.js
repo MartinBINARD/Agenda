@@ -14,6 +14,7 @@ import * as Yup from "yup";
 import { colors } from "../../constants/colors";
 import { createEvent } from "../../lib";
 import { addEvent, removeEvent, updateEvent } from "../../store/slices/agendaSlice";
+import ErrorOverlay from "../overlay/ErrorOverlay";
 import LoadingOverlay from "../overlay/LoadingOverlay";
 import CustomBtn from "./CustomBtn";
 import DateTimePicker from "./DateTimePicker";
@@ -26,6 +27,7 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
     state.agenda.events.find((event) => event.id === selectedEvent)
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [httpError, setHttpError] = useState(false);
   const dispatch = useDispatch();
   const initialState = event ? event : {
     title: "",
@@ -56,6 +58,24 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
   });
   const closeKeyboardHandler = () => Keyboard.dismiss();
 
+  const createEventHandler = async (data) => {
+    setIsLoading(true);
+    try {
+      const newEventId = await createEvent(data);
+      data.id = newEventId;
+      dispatch(addEvent(data));
+      setIsLoading(false);
+      closeForm();
+    } catch (error) {
+      setIsLoading(false);
+      setHttpError(true);
+      setTimeout(() => {
+        closeForm();
+        setHttpError(false);
+      }, 4000);
+    }
+  };
+
   const onSubmit = async (values) => {
     const data = {
       title: values.title,
@@ -71,15 +91,8 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
       data.id = event.id;
       dispatch(updateEvent(data));
     } else {
-      setIsLoading(true);
-      const newEventId = await createEvent(data);
-      data.id = newEventId;
-      dispatch(addEvent(data));
+      createEventHandler(data);
     }
-    setTimeout(() => {
-      closeForm();
-      setIsLoading(false);
-    }, 2000);
   };
 
   const removeEvt = () => {
@@ -192,7 +205,8 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
                 closeModal={setStatus}
                 errors={errors}
               />
-              { isLoading ? <LoadingOverlay /> : null}
+              {isLoading ? <LoadingOverlay /> : null}
+              {httpError ? <ErrorOverlay /> : null}
             </>
           )}}
         </Formik>
