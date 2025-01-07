@@ -2,6 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import { Formik } from "formik";
 import { useState } from "react";
 import {
+  ActivityIndicator,
   Keyboard,
   Modal,
   Pressable,
@@ -12,7 +13,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import * as Yup from "yup";
 import { colors } from "../../constants/colors";
-import { createEvent, updateEvent } from "../../lib";
+import { createEvent, deleteEvent, updateEvent } from "../../lib";
 import { addEvent, removeEvent, updateEvent as updateReducer } from "../../store/slices/agendaSlice";
 import ErrorOverlay from "../overlay/ErrorOverlay";
 import LoadingOverlay from "../overlay/LoadingOverlay";
@@ -27,6 +28,7 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
     state.agenda.events.find((event) => event.id === selectedEvent)
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [isRemoveLoading, setIsRemoveLoading] = useState(false);
   const [httpError, setHttpError] = useState(false);
   const dispatch = useDispatch();
   const initialState = event ? event : {
@@ -58,18 +60,18 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
   });
   const closeKeyboardHandler = () => Keyboard.dismiss();
 
-  const httpEventHandler = async (data, httpFn, reducer) => {
-    setIsLoading(true);
+  const httpEventHandler = async (data, httpFn, reducer, setLoadingSate) => {
+    setLoadingSate(true);
     try {
       const newEventId = await httpFn(data);
       if (!data.id) {
         data.id = newEventId;
       }
       dispatch(reducer(data));
-      setIsLoading(false);
+      setLoadingSate(false);
       closeForm();
     } catch (error) {
-      setIsLoading(false);
+      setLoadingSate(false);
       setHttpError(true);
       setTimeout(() => {
         closeForm();
@@ -91,17 +93,18 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
 
     if (event?.id) {
       data.id = event.id;
-      httpEventHandler(data, updateEvent, updateReducer);
+      httpEventHandler(data, updateEvent, updateReducer, setIsLoading);
     } else {
-      httpEventHandler(data, createEvent, addEvent);
+      httpEventHandler(data, createEvent, addEvent, setIsLoading);
     }
   };
 
   const removeEvt = () => {
     if (event) {
-      dispatch(removeEvent({id : event.id}));
+      httpEventHandler({ id: event.id }, deleteEvent, removeEvent, setIsRemoveLoading);
+    } else {
+      closeFormHandler();
     }
-    closeFormHandler();
   };
   
   const closeFormHandler = () => {
@@ -117,13 +120,17 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
       <Pressable style={styles.formContainer} onPress={closeKeyboardHandler}>
         <View style={styles.headerContainer}>
           <Text style={styles.formTitle}>Nouvel événement</Text>
-          <Feather
-            name="trash-2"
-            size={28}
-            color={colors.LIGHT}
-            onPress={removeEvt}
-            suppressHighlighting={true}
-          />
+          {isRemoveLoading ? (
+            <ActivityIndicator color={colors.LIGHT} size="small" />
+          ) : (
+            <Feather
+              name="trash-2"
+              size={28}
+              color={colors.LIGHT}
+              onPress={removeEvt}
+              suppressHighlighting={true}
+            />
+          )}
         </View>
         <Formik
           initialValues={initialState}
@@ -207,7 +214,7 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
                 closeModal={setStatus}
                 errors={errors}
               />
-              {isLoading ? <LoadingOverlay /> : null}
+              {isLoading || isRemoveLoading ? <LoadingOverlay /> : null}
               {httpError ? <ErrorOverlay /> : null}
             </>
           )}}
