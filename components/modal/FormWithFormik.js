@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import { Formik } from "formik";
-import { useState } from "react";
+import { useEffect } from "react";
 import {
   ActivityIndicator,
   Keyboard,
@@ -10,11 +10,9 @@ import {
   Text,
   View,
 } from "react-native";
-import { useDispatch, useSelector } from "react-redux";
 import * as Yup from "yup";
 import { colors } from "../../constants/colors";
-import { createEvent, deleteEvent, updateEvent } from "../../lib";
-import { addEvent, removeEvent, updateEvent as updateReducer } from "../../store/slices/agendaSlice";
+import { useCreateEventMutation, useDeleteEventMutation, useGetAllEventsQuery, useUpdateEventMutation } from "../../store/api/agendaApi";
 import ErrorOverlay from "../overlay/ErrorOverlay";
 import LoadingOverlay from "../overlay/LoadingOverlay";
 import CustomBtn from "./CustomBtn";
@@ -24,13 +22,26 @@ import Input from "./Input";
 import IsOnline from "./IsOnline";
 
 export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent }) {
-  const event = useSelector((state) =>
-    state.agenda.events.find((event) => event.id === selectedEvent)
-  );
-  const [isLoading, setIsLoading] = useState(false);
-  const [isRemoveLoading, setIsRemoveLoading] = useState(false);
-  const [httpError, setHttpError] = useState(false);
-  const dispatch = useDispatch();
+  // const event = useSelector((state) =>
+  //   state.agenda.events.find((event) => event.id === selectedEvent)
+  // );
+  // const [isLoading, setIsLoading] = useState(false);
+  // const [isRemoveLoading, setIsRemoveLoading] = useState(false);
+  // const [httpError, setHttpError] = useState(false);
+  
+  const closeKeyboardHandler = () => Keyboard.dismiss();
+  const {data: event, error} = useGetAllEventsQuery(undefined, {
+    skip: !selectedEvent,
+    selectFromResult: ({ data, error }) => ({
+      data: data?.find(item => item.id === selectedEvent)
+    })
+  });
+  const [createEvent, { isLoading: isCreating, error: createError, isSuccess: isCreated }] = useCreateEventMutation();
+
+  const [updateEvent, { isLoading: isUpdating, error: updateError, isSuccess: isUpdated }] = useUpdateEventMutation();
+
+  const [deleteEvent, { isLoading: isDeleting, error: deleteError, isSuccess: isDeleted}] = useDeleteEventMutation();
+
   const initialState = event ? event : {
     title: "",
     location: "",
@@ -58,27 +69,26 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
       "La fin de l'événement doit être après le début"
     ),
   });
-  const closeKeyboardHandler = () => Keyboard.dismiss();
 
-  const httpEventHandler = async (data, httpFn, reducer, setLoadingSate) => {
-    setLoadingSate(true);
-    try {
-      const newEventId = await httpFn(data);
-      if (!data.id) {
-        data.id = newEventId;
-      }
-      dispatch(reducer(data));
-      setLoadingSate(false);
-      closeForm();
-    } catch (error) {
-      setLoadingSate(false);
-      setHttpError(true);
-      setTimeout(() => {
-        closeForm();
-        setHttpError(false);
-      }, 4000);
-    }
-  };
+  // const httpEventHandler = async (data, httpFn, reducer, setLoadingSate) => {
+  //   setLoadingSate(true);
+  //   try {
+  //     const newEventId = await httpFn(data);
+  //     if (!data.id) {
+  //       data.id = newEventId;
+  //     }
+  //     dispatch(reducer(data));
+  //     setLoadingSate(false);
+  //     closeForm();
+  //   } catch (error) {
+  //     setLoadingSate(false);
+  //     setHttpError(true);
+  //     setTimeout(() => {
+  //       closeForm();
+  //       setHttpError(false);
+  //     }, 4000);
+  //   }
+  // };
 
   const onSubmit = async (values) => {
     const data = {
@@ -93,23 +103,25 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
 
     if (event?.id) {
       data.id = event.id;
-      httpEventHandler(data, updateEvent, updateReducer, setIsLoading);
+      updateEvent(data);
     } else {
-      httpEventHandler(data, createEvent, addEvent, setIsLoading);
+      createEvent(data);
     }
   };
 
   const removeEvt = () => {
     if (event) {
-      httpEventHandler({ id: event.id }, deleteEvent, removeEvent, setIsRemoveLoading);
+      deleteEvent({ id: event.id });
     } else {
-      closeFormHandler();
+      closeForm();
     }
   };
-  
-  const closeFormHandler = () => {
-    closeForm();
-  };
+
+  useEffect(() => {
+    if (isCreated || isUpdated || isDeleted) {
+      closeForm();
+    }
+  }, [isCreated, isUpdated, isDeleted]);
 
   return (
     <Modal
@@ -119,8 +131,8 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
     >
       <Pressable style={styles.formContainer} onPress={closeKeyboardHandler}>
         <View style={styles.headerContainer}>
-          <Text style={styles.formTitle}>Nouvel événement</Text>
-          {isRemoveLoading ? (
+          <Text style={styles.formTitle}>{ selectedEvent ? "Modifier l'événement" : "Nouvel événement" }</Text>
+          {isDeleting ? (
             <ActivityIndicator color={colors.LIGHT} size="small" />
           ) : (
             <Feather
@@ -201,12 +213,12 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
                 setIsEnabled={(value) => setFieldValue("isOnline", value)}
                 />
               <View style={styles.btnContainer}>
-                <CustomBtn text="Annuler" color={colors.PINK} onPress={closeFormHandler} />
+                <CustomBtn text="Annuler" color={colors.PINK} onPress={closeForm} />
                 <CustomBtn
                   text="Valider"
                   color={colors.VIOLET}
                   onPress={handleSubmit}
-                  isLoading={isLoading}
+                  isLoading={isCreating || isUpdating}
                 />
               </View>
               <ErrorModal
@@ -214,8 +226,8 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
                 closeModal={setStatus}
                 errors={errors}
               />
-              {isLoading || isRemoveLoading ? <LoadingOverlay /> : null}
-              {httpError ? <ErrorOverlay /> : null}
+              {isCreating || isUpdating || isDeleting ? <LoadingOverlay /> : null}
+              {createError || updateError || deleteError ? <ErrorOverlay /> : null}
             </>
           )}}
         </Formik>
