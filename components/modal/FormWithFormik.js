@@ -15,10 +15,10 @@ import { colors } from "../../constants/colors";
 import { useCreateEventMutation, useDeleteEventMutation, useGetAllEventsQuery, useUpdateEventMutation } from "../../store/api/agendaApi";
 import ErrorOverlay from "../overlay/ErrorOverlay";
 import LoadingOverlay from "../overlay/LoadingOverlay";
+import ErrorModal from "../shared/ErrorModal";
+import Input from "../shared/Input";
 import CustomBtn from "./CustomBtn";
 import DateTimePicker from "./DateTimePicker";
-import ErrorModal from "./ErrorModal";
-import Input from "./Input";
 import IsOnline from "./IsOnline";
 
 export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent }) {

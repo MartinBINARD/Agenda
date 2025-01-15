@@ -1,9 +1,11 @@
 import { StyleSheet, Text, TextInput, View } from "react-native";
 import { colors } from "../../constants/colors";
 
-export default function Input({ label, error, ...inputProps }) {
+export default function Input({ label, error, type, ...inputProps }) {
 
   const inputStyles = [styles.input];
+  const containerStyle = [styles.inputContainer]
+
   if (inputProps?.multiline) {
     inputStyles.push(styles.multilineInput);
   }
@@ -11,11 +13,17 @@ export default function Input({ label, error, ...inputProps }) {
   if (error) {
     inputStyles.push(styles.inputError);
   }
+
+  if (type === "password") {
+    containerStyle.push({
+      marginTop: 12
+    })
+  }
   
   return (
-    <View style={styles.inputContainer}>
+    <View style={containerStyle}>
       <Text style={styles.label}>{label}</Text>
-      <TextInput style={inputStyles} {...inputProps} />
+      <TextInput style={inputStyles} {...inputProps} secureTextEntry={type === "password"} />
     </View>
   );
 }

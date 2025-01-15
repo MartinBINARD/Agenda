@@ -23,8 +23,11 @@ export const agendaApi = createApi({
           (a, b) => new Date(a.startDate) - new Date(b.startDate)
         );
       },
-      transformErrorResponse: () =>
-        "Une erreur s'est produite. Veuillez ré-essayer ultérieurement",
+      transformErrorResponse: (error) => {
+        console.log(error);
+        
+        return "Une erreur s'est produite. Veuillez ré-essayer ultérieurement"
+      }
     }),
     createEvent: builder.mutation({
       invalidatesTags: ["Events"],

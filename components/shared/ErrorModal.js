@@ -1,6 +1,6 @@
 import { Dimensions, Modal, StyleSheet, Text, View } from "react-native";
 import { colors } from "../../constants/colors";
-import CustomBtn from "./CustomBtn";
+import CustomBtn from "../modal/CustomBtn";
 
 export default function ErrorModal({ isModalVisible, closeModal, errors}) {
   return (

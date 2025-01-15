@@ -2,15 +2,15 @@ import { SafeAreaView, StatusBar, StyleSheet } from "react-native";
 import { Provider } from "react-redux";
 import { store } from "./store/store";
 
-import AgendaList from "./components/agenda/AgendaList";
 import { colors } from "./constants/colors";
+import StackNavigator from "./navigator/StackNavigator";
 
 export default function App() {
   return (
     <Provider store={store}>
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle={"light-content"} />
-        <AgendaList />
+        <StackNavigator />
       </SafeAreaView>
     </Provider>
   );

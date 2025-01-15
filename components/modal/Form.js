@@ -11,10 +11,10 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { colors } from "../../constants/colors";
 import { addEvent, removeEvent, updateEvent } from "../../store/slices/agendaSlice";
+import ErrorModal from "../shared/ErrorModal";
+import Input from "../shared/Input";
 import CustomBtn from "./CustomBtn";
 import DateTimePicker from "./DateTimePicker";
-import ErrorModal from "./ErrorModal";
-import Input from "./Input";
 import IsOnline from "./IsOnline";
 
 const initialState = {
