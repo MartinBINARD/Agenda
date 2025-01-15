@@ -6,9 +6,9 @@ export const authApi = createApi({
         baseUrl: process.env.EXPO_PUBLIC_AUTH_URL,
     }),
     endpoints: (builder) => ({
-        signUp: builder.mutation({
-            query: ({ email, password }) => ({
-                url: `:signUp?key=${process.env.EXPO_PUBLIC_FIREBASE_API_KEY}`,
+        sign: builder.mutation({
+            query: ({ endpoint, email, password }) => ({
+                url: `:${endpoint}?key=${process.env.EXPO_PUBLIC_FIREBASE_API_KEY}`,
                 method: 'POST',
                 body: {
                     email,
@@ -20,4 +20,4 @@ export const authApi = createApi({
     }),
 });
 
-export const { useSignUpMutation } = authApi;
+export const { useSignMutation } = authApi;

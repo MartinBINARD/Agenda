@@ -2,6 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { Formik } from 'formik';
 import { useEffect } from 'react';
 import { ActivityIndicator, Keyboard, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSelector } from 'react-redux';
 import * as Yup from 'yup';
 import { colors } from '../../constants/colors';
 import { useCreateEventMutation, useDeleteEventMutation, useGetAllEventsQuery, useUpdateEventMutation } from '../../store/api/agendaApi';
@@ -21,8 +22,9 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
     // const [isRemoveLoading, setIsRemoveLoading] = useState(false);
     // const [httpError, setHttpError] = useState(false);
 
+    const token = useSelector((state) => state.auth.idToken);
     const closeKeyboardHandler = () => Keyboard.dismiss();
-    const { data: event, error } = useGetAllEventsQuery(undefined, {
+    const { data: event, error } = useGetAllEventsQuery(token, {
         skip: !selectedEvent,
         selectFromResult: ({ data, error }) => ({
             data: data?.find((item) => item.id === selectedEvent),
@@ -94,15 +96,15 @@ export default function FormWithFormik({ isFormVisible, closeForm, selectedEvent
 
         if (event?.id) {
             data.id = event.id;
-            updateEvent(data);
+            updateEvent({ id: event.id, event: data, token });
         } else {
-            createEvent(data);
+            createEvent({ event: data, token });
         }
     };
 
     const removeEvt = () => {
         if (event) {
-            deleteEvent({ id: event.id });
+            deleteEvent({ id: event.id, token });
         } else {
             closeForm();
         }

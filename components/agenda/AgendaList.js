@@ -1,6 +1,7 @@
 import { AntDesign } from '@expo/vector-icons';
 import { useState } from 'react';
 import { ActivityIndicator, Dimensions, FlatList, StyleSheet, Text, View } from 'react-native';
+import { useSelector } from 'react-redux';
 import { colors } from '../../constants/colors';
 import { useGetAllEventsQuery } from '../../store/api/agendaApi.js';
 import FormWithFormik from '../modal/FormWithFormik';
@@ -44,7 +45,8 @@ export default function AgendaList() {
     // const [isLoading, setIsLoading] = useState(false);
     // const [httpError, setHttpError] = useState(false);
 
-    const { data, isLoading: loading, error } = useGetAllEventsQuery();
+    const token = useSelector((state) => state.auth.idToken);
+    const { data, isLoading: loading, error } = useGetAllEventsQuery(token);
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState();
 
