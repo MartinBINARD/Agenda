@@ -1,5 +1,9 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
+const errorMessages = {
+    EMAIL_EXISTS: 'Cette email est déjà utilisé',
+    INVALID_LOGIN_CREDENTIALS: 'Ces identifiants sont incorrects',
+};
 export const authApi = createApi({
     reducerPath: 'authApi',
     baseQuery: fetchBaseQuery({
@@ -16,6 +20,11 @@ export const authApi = createApi({
                     returnSecureToken: true,
                 },
             }),
+            transformErrorResponse: (response) => {
+                return {
+                    error: errorMessages[response.data?.error.message] || 'Une erreur est survenue. Veuillez ré-essayer utlérieurement.',
+                };
+            },
         }),
     }),
 });

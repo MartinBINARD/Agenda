@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSignMutation } from '../../store/api/authApi';
 import AuthForm from './AuthForm';
@@ -6,6 +6,7 @@ import AuthForm from './AuthForm';
 export default function Signup({ navigation }) {
     const dispatch = useDispatch();
     const [signUp, { data, isLoading, error }] = useSignMutation();
+    const [httpError, setHttpError] = useState();
     const navigateToLogin = () => {
         navigation.replace('Login');
     };
@@ -19,5 +20,19 @@ export default function Signup({ navigation }) {
         }
     }, [data]);
 
-    return <AuthForm navigate={navigateToLogin} submitFormHandler={submitFormHandler} isLoading={isLoading} />;
+    useEffect(() => {
+        if (error) {
+            setHttpError(error);
+        }
+    }, [error]);
+
+    return (
+        <AuthForm
+            navigate={navigateToLogin}
+            submitFormHandler={submitFormHandler}
+            isLoading={isLoading}
+            error={httpError}
+            setHttpError={setHttpError}
+        />
+    );
 }

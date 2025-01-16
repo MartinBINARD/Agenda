@@ -6,7 +6,7 @@ import CustomBtn from '../modal/CustomBtn';
 import ErrorModal from '../shared/ErrorModal';
 import Input from '../shared/Input';
 
-export default function AuthForm({ loginScreen, navigate, submitFormHandler, isLoading }) {
+export default function AuthForm({ loginScreen, navigate, submitFormHandler, isLoading, error, setHttpError }) {
     const initialValues = loginScreen
         ? { email: '', password: '' }
         : {
@@ -34,9 +34,14 @@ export default function AuthForm({ loginScreen, navigate, submitFormHandler, isL
             <Text style={styles.title}>{loginScreen ? 'Connexion' : 'Inscription'}</Text>
             <Formik initialValues={initialValues} onSubmit={submitFormHandler} validationSchema={validationSchema}>
                 {({ values, handleChange, handleSubmit, errors, touched, handleBlur, isSubmitting, status, setStatus }) => {
-                    if (isSubmitting && Object.keys(errors).length && status !== 'error') {
+                    if (((isSubmitting && Object.keys(errors).length) || error) && status !== 'error') {
                         setStatus('error');
                     }
+
+                    const removeErrors = () => {
+                        setStatus();
+                        setHttpError();
+                    };
 
                     return (
                         <View>
@@ -74,7 +79,7 @@ export default function AuthForm({ loginScreen, navigate, submitFormHandler, isL
                             <View style={styles.btnContainer}>
                                 <CustomBtn text="Valider" onPress={handleSubmit} isLoading={isLoading} />
                             </View>
-                            <ErrorModal isModalVisible={status == 'error'} closeModal={setStatus} errors={errors} />
+                            <ErrorModal isModalVisible={status == 'error'} closeModal={removeErrors} errors={error || errors} />
                         </View>
                     );
                 }}
