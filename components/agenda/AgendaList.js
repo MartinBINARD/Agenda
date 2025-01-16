@@ -1,5 +1,6 @@
 import { AntDesign } from '@expo/vector-icons';
 import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
+import * as SecureStore from 'expo-secure-store';
 import { useState } from 'react';
 import { ActivityIndicator, Dimensions, FlatList, StyleSheet, Text, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
@@ -65,6 +66,7 @@ export default function AgendaList() {
 
     const logout = () => {
         dispatch(setToken());
+        SecureStore.deleteItemAsync('credentials');
     };
 
     return (

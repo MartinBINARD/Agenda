@@ -1,3 +1,4 @@
+import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSignMutation } from '../../store/api/authApi';
@@ -12,7 +13,9 @@ export default function Login({ navigation }) {
         navigation.replace('Signup');
     };
     const submitFormHandler = (values) => {
-        singIn({ email: values.email, password: values.password, endpoint: 'signInWithPassword' });
+        singIn({ email: values.email, password: values.password, endpoint: 'signInWithPassword' }).then(() => {
+            SecureStore.setItemAsync('credentials', JSON.stringify(values));
+        });
     };
 
     useEffect(() => {
