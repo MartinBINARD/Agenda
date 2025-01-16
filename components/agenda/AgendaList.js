@@ -1,15 +1,17 @@
 import { AntDesign } from '@expo/vector-icons';
+import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
 import { useState } from 'react';
 import { ActivityIndicator, Dimensions, FlatList, StyleSheet, Text, View } from 'react-native';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { colors } from '../../constants/colors';
 import { useGetAllEventsQuery } from '../../store/api/agendaApi.js';
+import { setToken } from '../../store/slices/authSlice.js';
 import FormWithFormik from '../modal/FormWithFormik';
 import ListItem from './ListItem';
 
-const Header = ({ openForm }) => (
+const Header = ({ openForm, logout }) => (
     <View style={styles.headerContainer}>
-        <View />
+        <SimpleLineIcons name="logout" size={24} color={colors.VIOLET} onPress={logout} />
         <Text style={styles.title}>AGENDA</Text>
         <AntDesign name="pluscircle" size={32} color={colors.PINK} suppressHighlighting={true} onPress={openForm} />
     </View>
@@ -24,7 +26,6 @@ const ListEmptyComponent = ({ isLoading, error }) => (
 
 export default function AgendaList() {
     // const agendaItems = useSelector((state) => state.agenda.events);
-    // const dispatch = useDispatch();
     // const getEvents = async () => {
     //   try {
     //     const events = await getAllEvents();
@@ -45,6 +46,7 @@ export default function AgendaList() {
     // const [isLoading, setIsLoading] = useState(false);
     // const [httpError, setHttpError] = useState(false);
 
+    const dispatch = useDispatch();
     const token = useSelector((state) => state.auth.idToken);
     const { data, isLoading: loading, error } = useGetAllEventsQuery(token);
     const [isFormVisible, setIsFormVisible] = useState(false);
@@ -61,6 +63,10 @@ export default function AgendaList() {
         setIsFormVisible(true);
     };
 
+    const logout = () => {
+        dispatch(setToken());
+    };
+
     return (
         <>
             <FlatList
@@ -69,7 +75,7 @@ export default function AgendaList() {
                 ItemSeparatorComponent={<View style={{ height: 24 }} />}
                 style={styles.listContainer}
                 renderItem={({ item }) => <ListItem item={item} selectItem={selectEventHandler} />}
-                ListHeaderComponent={<Header openForm={openFormHandler} />}
+                ListHeaderComponent={<Header openForm={openFormHandler} logout={logout} />}
                 ListEmptyComponent={<ListEmptyComponent isLoading={loading} error={error} />}
             />
             <FormWithFormik isFormVisible={isFormVisible} closeForm={closeFormHandler} selectedEvent={selectedEvent} />
