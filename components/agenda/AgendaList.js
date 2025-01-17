@@ -67,6 +67,7 @@ export default function AgendaList() {
     const logout = () => {
         dispatch(setToken());
         SecureStore.deleteItemAsync('credentials');
+        SecureStore.deleteItemAsync('refreshToken');
     };
 
     return (

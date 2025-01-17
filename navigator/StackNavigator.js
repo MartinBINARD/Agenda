@@ -8,7 +8,7 @@ import AgendaList from '../components/agenda/AgendaList';
 import Login from '../components/auth/Login';
 import Signup from '../components/auth/Signup';
 import { colors } from '../constants/colors';
-import { useSignMutation } from '../store/api/authApi';
+import { useRefreshTokenMutation, useSignMutation } from '../store/api/authApi';
 import { setToken } from '../store/slices/authSlice';
 
 const Stack = createNativeStackNavigator();
@@ -17,6 +17,7 @@ export default function StackNavigator() {
     const token = useSelector((state) => state.auth.idToken);
     const [isLoading, setIsLoading] = useState(!!token ? false : true);
     const [singIn, { data, error }] = useSignMutation();
+    const [refreshTokenMutation] = useRefreshTokenMutation();
     const dispatch = useDispatch();
 
     const autoLogin = async () => {
@@ -37,6 +38,18 @@ export default function StackNavigator() {
     useEffect(() => {
         if (!token) {
             autoLogin();
+        } else {
+            console.log(token);
+
+            setTimeout(async () => {
+                const refreshToken = await SecureStore.getItemAsync('refreshToken');
+                if (refreshToken) {
+                    refreshTokenMutation(refreshToken).then((res) => {
+                        dispatch(setToken(res.data.id_token));
+                        SecureStore.setItemAsync('refreshToken', res.data.refresh_token);
+                    });
+                }
+            }, 3750000);
         }
     }, [token]);
 

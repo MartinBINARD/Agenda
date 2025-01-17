@@ -13,8 +13,9 @@ export default function Login({ navigation }) {
         navigation.replace('Signup');
     };
     const submitFormHandler = (values) => {
-        singIn({ email: values.email, password: values.password, endpoint: 'signInWithPassword' }).then(() => {
+        singIn({ email: values.email, password: values.password, endpoint: 'signInWithPassword' }).then((response) => {
             SecureStore.setItemAsync('credentials', JSON.stringify(values));
+            SecureStore.setItemAsync('refreshToken', response.data.refreshToken);
         });
     };
 

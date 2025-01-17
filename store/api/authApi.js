@@ -26,7 +26,17 @@ export const authApi = createApi({
                 };
             },
         }),
+        refreshToken: builder.mutation({
+            query: (refreshToken) => ({
+                url: process.env.EXPO_PUBLIC_FIREBASE_TOKEN_URL + process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+                method: 'POST',
+                body: {
+                    grant_type: 'refresh_token',
+                    refresh_token: refreshToken,
+                },
+            }),
+        }),
     }),
 });
 
-export const { useSignMutation } = authApi;
+export const { useSignMutation, useRefreshTokenMutation } = authApi;

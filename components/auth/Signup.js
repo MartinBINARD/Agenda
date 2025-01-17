@@ -12,8 +12,9 @@ export default function Signup({ navigation }) {
         navigation.replace('Login');
     };
     const submitFormHandler = (values) => {
-        signUp({ email: values.email, password: values.password, endpoint: 'signUp' }).then(() => {
+        signUp({ email: values.email, password: values.password, endpoint: 'signUp' }).then((response) => {
             SecureStore.setItemAsync('credentials', JSON.stringify(values));
+            SecureStore.setItemAsync('refreshToken', response.data.refreshToken);
         });
     };
 
